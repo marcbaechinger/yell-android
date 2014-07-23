@@ -29,7 +29,7 @@ public class AsyncXmlParseTask extends AsyncTask<URL, Integer, DefaultHandler> {
 
     @Override
     protected void onCancelled(DefaultHandler defaultHandler) {
-
+        listener.onCompleted(defaultHandler);
     }
 
     @Override
@@ -54,23 +54,20 @@ public class AsyncXmlParseTask extends AsyncTask<URL, Integer, DefaultHandler> {
         return defaultHandler;
     }
 
+    @Override
+    protected void onPostExecute(DefaultHandler handler) {
+        if (listener != null) {
+            listener.onCompleted(handler);
+        }
+    }
+
     public void parse(InputStream is, DefaultHandler handler) {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
             SAXParser parser = factory.newSAXParser();
             parser.parse(is, handler);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         }
     }
-
-    @Override
-    protected void onPostExecute(DefaultHandler parser) {
-        Log.d(TAG, "retrieved parser in onPostExecute: " + parser);
-        if (listener != null) {
-            listener.onCompleted(parser);
-        }
-    }
-
-
 }
