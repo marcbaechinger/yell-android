@@ -17,9 +17,6 @@ import yellcast.com.yell.model.YellModel;
 import yellcast.com.yell.model.YellModelListener;
 import yellcast.com.yell.model.YellNode;
 
-/**
- * Created by marcbaechinger on 23.07.14.
- */
 public class YellApplication extends Application implements YellModelListener {
 
     private static final String APPLICATION_ID = "4FF83149";
@@ -51,30 +48,8 @@ public class YellApplication extends Application implements YellModelListener {
         model.initModel(initialNodes);
     }
 
-    public void sendAddYellNode(YellNode node) {
-        if (chromeCastManager.isConnected()) {
-            try {
-                JSONObject message = new JSONObject();
-                message.put("action", "add");
-                message.put("node", node.toJson());
-                chromeCastManager.sendMessage(message.toString(), YellChannelCallback.NAMESPACE);
-            } catch (JSONException e) {
-                Log.e("error creating json message", e.getMessage());
-            }
-        }
-    }
-
-    public void sendRemoveYellNode(YellNode node) {
-        if (chromeCastManager.isConnected()) {
-            try {
-                JSONObject message = new JSONObject();
-                message.put("action", "remove");
-                message.put("node", node.toJson());
-                chromeCastManager.sendMessage(message.toString(), YellChannelCallback.NAMESPACE);
-            } catch (JSONException e) {
-                Log.e("error creating json message", e.getMessage());
-            }
-        }
+    public YellModel getModel() {
+        return model;
     }
 
     @Override
@@ -90,7 +65,30 @@ public class YellApplication extends Application implements YellModelListener {
     @Override
     public void init(List<YellNode> nodes) {}
 
-    public YellModel getModel() {
-        return model;
+
+    private void sendAddYellNode(YellNode node) {
+        if (chromeCastManager.isConnected()) {
+            try {
+                JSONObject message = new JSONObject();
+                message.put("action", "add");
+                message.put("node", node.toJson());
+                chromeCastManager.sendMessage(message.toString(), YellChannelCallback.NAMESPACE);
+            } catch (JSONException e) {
+                Log.e("error creating json message", e.getMessage());
+            }
+        }
+    }
+
+    private void sendRemoveYellNode(YellNode node) {
+        if (chromeCastManager.isConnected()) {
+            try {
+                JSONObject message = new JSONObject();
+                message.put("action", "remove");
+                message.put("node", node.toJson());
+                chromeCastManager.sendMessage(message.toString(), YellChannelCallback.NAMESPACE);
+            } catch (JSONException e) {
+                Log.e("error creating json message", e.getMessage());
+            }
+        }
     }
 }
