@@ -1,4 +1,4 @@
-package yellcast.com.yell.cast;
+package yellcast.com.cast;
 
 import static com.google.android.gms.cast.Cast.Listener;
 

@@ -1,11 +1,11 @@
-package yellcast.com.yell.cast;
+package yellcast.com.cast;
 
 import android.os.Bundle;
 
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import yellcast.com.yell.YellChannel;
+import yellcast.com.yell.YellChannelCallback;
 
 /**
  * Created by marcbaechinger on 21.07.14.
@@ -28,7 +28,7 @@ public class CastApplicationLauncherCallback implements GoogleApiClient.Connecti
             waitingForReconnect = false;
             reconnectChannels();
         } else {
-            manager.launchApplication(YellChannel.NAMESPACE, callback);
+            manager.launchApplication(YellChannelCallback.NAMESPACE, callback);
         }
     }
 

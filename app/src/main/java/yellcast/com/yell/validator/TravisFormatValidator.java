@@ -1,10 +1,9 @@
-package yellcast.com.yell.net;
-
-import android.util.Log;
+package yellcast.com.yell.validator;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+
+import yellcast.com.net.FormatValidator;
 
 /**
  * Created by marcbaechinger on 22.07.14.

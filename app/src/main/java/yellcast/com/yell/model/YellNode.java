@@ -6,10 +6,10 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Created by marcbaechinger on 22.07.14.
- */
+import java.util.UUID;
+
 public class YellNode implements Parcelable {
+    private String uuid;
     private String label;
     private String url;
     private YellNodeType type;
@@ -25,9 +25,16 @@ public class YellNode implements Parcelable {
     };
 
 
-    public YellNode() {}
+    private YellNode(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public static final YellNode newInstance() {
+        return new YellNode(UUID.randomUUID().toString());
+    }
 
     public YellNode(Parcel in) {
+        uuid = in.readString();
         label = in.readString();
         url = in.readString();
         String typeName = in.readString();
@@ -37,9 +44,18 @@ public class YellNode implements Parcelable {
     }
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(uuid);
         parcel.writeString(label);
         parcel.writeString(url);
         parcel.writeString(this.type == null ? null : this.type.name());
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getLabel() {
@@ -73,6 +89,9 @@ public class YellNode implements Parcelable {
 
     public JSONObject toJson() throws JSONException {
         JSONObject json = new JSONObject();
+        if (uuid != null) {
+            json.put("uuid", uuid);
+        }
         if (label != null) {
             json.put("label", label);
         }
@@ -91,17 +110,14 @@ public class YellNode implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
 
         YellNode yellNode = (YellNode) o;
-
-        if (type != yellNode.type) return false;
-        if (url != null ? !url.equals(yellNode.url) : yellNode.url != null) return false;
+        if (uuid != null ? !uuid.equals(yellNode.uuid) : yellNode.uuid != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = (url != null ? url.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
+        int result = (uuid != null ? uuid.hashCode() : 0);
         return result;
     }
 }

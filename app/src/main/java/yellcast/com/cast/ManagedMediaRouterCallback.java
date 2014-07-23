@@ -1,10 +1,9 @@
-package yellcast.com.yell.cast;
+package yellcast.com.cast;
 
 import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.CastDevice;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
 * Created by marcbaechinger on 21.07.14.

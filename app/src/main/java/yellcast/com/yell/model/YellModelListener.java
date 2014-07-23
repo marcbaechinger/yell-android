@@ -1,4 +1,4 @@
-package yellcast.com.yell;
+package yellcast.com.yell.model;
 
 import java.util.List;
 

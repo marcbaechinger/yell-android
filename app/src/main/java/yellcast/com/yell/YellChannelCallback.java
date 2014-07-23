@@ -15,17 +15,14 @@ import java.util.List;
 import yellcast.com.yell.model.YellNode;
 import yellcast.com.yell.model.YellNodeType;
 
-/**
- * Created by marcbaechinger on 21.07.14.
- */
-public class YellChannel implements Cast.MessageReceivedCallback {
+public class YellChannelCallback implements Cast.MessageReceivedCallback {
 
-    private static final String TAG = YellChannel.class.getCanonicalName();
+    private static final String TAG = YellChannelCallback.class.getCanonicalName();
 
     public static final String NAMESPACE = "urn:x-cast:com.yellcast.v1.protocol";
     private final YellApplication application;
 
-    public YellChannel(YellApplication application) {
+    public YellChannelCallback(YellApplication application) {
         this.application = application;
     }
 
@@ -36,19 +33,22 @@ public class YellChannel implements Cast.MessageReceivedCallback {
             List<YellNode> nodes = new ArrayList<YellNode>();
 
             JSONObject jsonMsg = new JSONObject(message);
-            JSONArray yells = jsonMsg.getJSONArray("yells");
-            for (int i = 0; i < yells.length(); i++) {
-                nodes.add(map(yells.getJSONObject(i)));
+            if ("status".equals(jsonMsg.getString("action"))) {
+                JSONArray yells = jsonMsg.getJSONArray("yells");
+                for (int i = 0; i < yells.length(); i++) {
+                    nodes.add(map(yells.getJSONObject(i)));
+                }
+                application.initModel(nodes);
             }
-            application.initModel(nodes);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     private YellNode map(JSONObject jsonYell) throws JSONException {
-        YellNode yell = new YellNode();
+        YellNode yell = YellNode.newInstance();
 
+        yell.setUuid(jsonYell.getString("uuid"));
         yell.setUrl(jsonYell.getString("url"));
         yell.setLabel(jsonYell.getString("label"));
 

@@ -1,4 +1,4 @@
-package yellcast.com.yell.cast;
+package yellcast.com.cast;
 
 import android.content.Context;
 import android.support.v7.app.MediaRouteActionProvider;
@@ -16,11 +16,8 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
-import yellcast.com.yell.YellChannel;
+import yellcast.com.yell.YellChannelCallback;
 
-/**
- * Created by marcbaechinger on 21.07.14.
- */
 public class ChromeCastManager {
 
     private static final String TAG = ChromeCastManager.class.getCanonicalName();
@@ -38,10 +35,12 @@ public class ChromeCastManager {
     private String sessionId;
     private String namespace;
     private Cast.MessageReceivedCallback callback;
+    private DeviceConnectionCallback deviceConnectionCallback;
 
 
-    public ChromeCastManager(Cast.MessageReceivedCallback callback) {
+    public ChromeCastManager(Cast.MessageReceivedCallback callback, DeviceConnectionCallback deviceConnectionCallback) {
         this.callback = callback;
+        this.deviceConnectionCallback = deviceConnectionCallback;
     }
 
     public void init(Context context, String applicationId) {
@@ -57,7 +56,7 @@ public class ChromeCastManager {
                 .build();
     }
 
-    public void scann(MediaRouteActionProvider mediaRouteActionProvider) {
+    public void registerMediaRouteSelector(MediaRouteActionProvider mediaRouteActionProvider) {
         mediaRouteActionProvider.setRouteSelector(mediaRouteSelector);
     }
 
@@ -122,6 +121,7 @@ public class ChromeCastManager {
         apiClient.connect();
         this.setApiClient(apiClient);
         this.setSelectedDevice(device);
+        deviceConnectionCallback.onSelectDevice(device);
     }
 
     public void onRouteUnselected() {
@@ -129,7 +129,10 @@ public class ChromeCastManager {
             apiClient.disconnect();
             apiClient = null;
         }
+        deviceConnectionCallback.onUnselectDevice(selectedDevice);
         selectedDevice = null;
+        applicationMetadata = null;
+        sessionId = null;
     }
 
     public void launchApplication(final String namespace, final Cast.MessageReceivedCallback callback) {
@@ -152,7 +155,7 @@ public class ChromeCastManager {
                                             ChromeCastManager.this.namespace = null;
                                         }
                                     } else {
-                                        Log.w(TAG, "receiver application does not support namespace " + YellChannel.NAMESPACE);
+                                        Log.w(TAG, "receiver application does not support namespace " + YellChannelCallback.NAMESPACE);
                                     }
                                 } else {
                                     unlistenMessages(namespace);

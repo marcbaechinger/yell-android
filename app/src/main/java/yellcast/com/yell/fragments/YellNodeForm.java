@@ -20,9 +20,9 @@ import yellcast.com.yell.R;
 import yellcast.com.yell.YellApplication;
 import yellcast.com.yell.model.YellNode;
 import yellcast.com.yell.model.YellNodeType;
-import yellcast.com.yell.net.AsyncXmlParseTask;
-import yellcast.com.yell.net.FormatValidator;
-import yellcast.com.yell.net.TravisFormatValidator;
+import yellcast.com.net.AsyncXmlParseTask;
+import yellcast.com.net.FormatValidator;
+import yellcast.com.yell.validator.TravisFormatValidator;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -51,7 +51,7 @@ public class YellNodeForm extends Fragment {
             public void onClick(View view) {
                 try {
                     final URL url = new URL(urlEdit.getText().toString());
-                    if (((YellApplication)getActivity().getApplication()).contains(url.toExternalForm())) {
+                    if (((YellApplication)getActivity().getApplication()).getModel().contains(url.toExternalForm())) {
                         showValidationErrorMessage(R.string.url_exists);
                         return;
                     }
@@ -68,12 +68,12 @@ public class YellNodeForm extends Fragment {
                                 showValidationErrorMessage(R.string.invalid_format);
                                 return;
                             }
-                            YellNode yellNode = new YellNode();
+                            YellNode yellNode = YellNode.newInstance();
                             yellNode.setType(type);
                             yellNode.setLabel(labelEdit.getText().toString());
                             yellNode.setUrl(url.toExternalForm());
 
-                            ((YellApplication)getActivity().getApplication()).add(yellNode);
+                            ((YellApplication)getActivity().getApplication()).getModel().add(yellNode);
                             getActivity().finish();
                         }
                     }).execute(url);

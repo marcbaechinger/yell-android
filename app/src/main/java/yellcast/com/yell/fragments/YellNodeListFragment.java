@@ -17,18 +17,20 @@ import java.util.List;
 
 import yellcast.com.yell.R;
 import yellcast.com.yell.YellApplication;
-import yellcast.com.yell.YellModelListener;
+import yellcast.com.yell.model.YellModelListener;
+import yellcast.com.yell.model.YellModelListenerBase;
 import yellcast.com.yell.model.YellNode;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class YellNodeListFragment extends Fragment  implements AbsListView.OnItemClickListener, YellModelListener {
+public class YellNodeListFragment extends Fragment  implements AbsListView.OnItemClickListener {
 
     private YellNodeListAdapter adapter;
     private ListView listView;
     private YellNodeSelectionListener listener;
     private YellApplication application;
+    private YellModelListener modelListener;
 
     public YellNodeListFragment() {
 
@@ -78,7 +80,7 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
             @Override
             public void onDismiss(ListView listView, int[] reverseSortedPositions) {
                 if (reverseSortedPositions.length > 0) {
-                    application.remove((YellNode) adapter.getItem(reverseSortedPositions[0]));
+                    application.getModel().remove((YellNode) adapter.getItem(reverseSortedPositions[0]));
                     adapter.remove(reverseSortedPositions[0]);
                 }
             }
@@ -86,10 +88,16 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
         listView.setOnTouchListener(touchListener);
         listView.setOnScrollListener(touchListener.makeScrollListener());
 
-        List<YellNode> yells = ((YellApplication)getActivity().getApplication()).getNodes();
+        List<YellNode> yells = application.getModel().getNodes();
         adapter = new YellNodeListAdapter(getActivity(), yells);
         ((AdapterView<ListAdapter>) listView).setAdapter(adapter);
 
+        modelListener = new YellModelListenerBase() {
+            @Override
+            public void init(List<YellNode> nodes) {
+                adapter.refresh(nodes);
+            }
+        };
 
         return rootView;
     }
@@ -102,13 +110,13 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
     @Override
     public void onResume() {
         super.onResume();
-        adapter.refresh(((YellApplication)getActivity().getApplication()).getNodes());
-        ((YellApplication)getActivity().getApplication()).addYellModelListener(this);
+        adapter.refresh(application.getModel().getNodes());
+        application.getModel().addYellModelListener(modelListener);
     }
 
     @Override
     public void onPause() {
-        ((YellApplication)getActivity().getApplication()).addYellModelListener(this);
+        application.getModel().removeYellModelListener(modelListener);
         super.onPause();
     }
 
@@ -127,20 +135,5 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
     public void onDetach() {
         super.onDetach();
         listener = null;
-    }
-
-    @Override
-    public void addYellNode(YellNode node) {
-
-    }
-
-    @Override
-    public void removeYellNode(YellNode node) {
-
-    }
-
-    @Override
-    public void init(List<YellNode> nodes) {
-        adapter.refresh(nodes);
     }
 }
