@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="color_travis">#214D99</drawable>
+    <drawable name="color_jenkins">#C73F24</drawable>
+    <drawable name="color_up4sure">#23782B</drawable>
+</resources>

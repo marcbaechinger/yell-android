@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Yell</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="new_yell_label">Add new Yell</string>
+    <string name="media_route_menu_title">Cast</string>
+    <string name="title_activity_create_yell">Add a Yell!</string>
+    <string name="create_label_label">Label</string>
+    <string name="create_label_url">URL</string>
+    <string name="create_label_type">Type</string>
+    <string name="create_button_label">OK</string>
+    <string name="jenkins_name">Jenkins</string>
+    <string name="travis_name">Travis</string>
+    <string name="invalid_format">Resource format is not valid</string>
+    <string name="invalid_url">Invalid URL format</string>
+    <string name="up4sure_name">up4sure</string>
+    <string name="url_exists">Url already registered</string>
+
+</resources>

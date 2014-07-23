@@ -1,0 +1,47 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:orientation="vertical"
+    tools:context=".fragments.YellNodeFragment">
+
+    <TextView
+        android:id="@+id/yell_node_icon"
+        android:text="T"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginRight="12dp"
+        android:paddingTop="0px"
+        android:paddingLeft="13dp"
+        android:textSize="36dp"
+        android:textColor="@android:color/white"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:background="@android:color/holo_green_dark"/>
+
+    <LinearLayout
+        android:layout_toRightOf="@+id/yell_node_icon"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".fragments.YellNodeFragment">
+        <TextView
+            android:id="@+id/yell_node_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"
+            android:text="asdas"/>
+        <TextView
+            android:id="@+id/yell_node_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"/>
+    </LinearLayout>
+
+</RelativeLayout>
