@@ -35,12 +35,12 @@ public class ChromeCastManager {
     private String sessionId;
     private String namespace;
     private Cast.MessageReceivedCallback callback;
-    private DeviceConnectionCallback deviceConnectionCallback;
+    private DeviceSelectionCallback deviceSelectionCallback;
 
 
-    public ChromeCastManager(Cast.MessageReceivedCallback callback, DeviceConnectionCallback deviceConnectionCallback) {
+    public ChromeCastManager(Cast.MessageReceivedCallback callback, DeviceSelectionCallback deviceSelectionCallback) {
         this.callback = callback;
-        this.deviceConnectionCallback = deviceConnectionCallback;
+        this.deviceSelectionCallback = deviceSelectionCallback;
     }
 
     public void init(Context context, String applicationId) {
@@ -121,7 +121,7 @@ public class ChromeCastManager {
         apiClient.connect();
         this.setApiClient(apiClient);
         this.setSelectedDevice(device);
-        deviceConnectionCallback.onSelectDevice(device);
+        deviceSelectionCallback.onSelectDevice(device);
     }
 
     public void onRouteUnselected() {
@@ -129,7 +129,7 @@ public class ChromeCastManager {
             apiClient.disconnect();
             apiClient = null;
         }
-        deviceConnectionCallback.onUnselectDevice(selectedDevice);
+        deviceSelectionCallback.onDeselectDevice(selectedDevice);
         selectedDevice = null;
         applicationMetadata = null;
         sessionId = null;

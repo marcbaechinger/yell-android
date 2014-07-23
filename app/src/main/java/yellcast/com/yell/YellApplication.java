@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import yellcast.com.cast.ChromeCastManager;
-import yellcast.com.cast.DeviceConnectionCallback;
+import yellcast.com.cast.DeviceSelectionCallback;
 import yellcast.com.yell.model.YellModel;
 import yellcast.com.yell.model.YellModelListener;
 import yellcast.com.yell.model.YellNode;
@@ -31,9 +31,9 @@ public class YellApplication extends Application implements YellModelListener {
 
     public ChromeCastManager getChromeCastManager() {
         if (chromeCastManager == null) {
-            chromeCastManager = new ChromeCastManager(new YellChannelCallback(this), new DeviceConnectionCallback() {
+            chromeCastManager = new ChromeCastManager(new YellChannelCallback(this), new DeviceSelectionCallback() {
                 @Override
-                public void onUnselectDevice(CastDevice selectedDevice) {
+                public void onDeselectDevice(CastDevice selectedDevice) {
                     initModel(new ArrayList<YellNode>());
                 }
                 @Override
