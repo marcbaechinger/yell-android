@@ -16,8 +16,6 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
-import yellcast.com.yell.YellChannelCallback;
-
 public class ChromeCastManager {
 
     private static final String TAG = ChromeCastManager.class.getCanonicalName();
@@ -33,12 +31,12 @@ public class ChromeCastManager {
     private String applicationId;
     private ApplicationMetadata applicationMetadata;
     private String sessionId;
-    private Cast.MessageReceivedCallback callback;
+    private Cast.MessageReceivedCallback messageReceiverCallback;
     private DeviceSelectionCallback deviceSelectionCallback;
 
 
-    public ChromeCastManager(Context context, String applicationId, Cast.MessageReceivedCallback callback, DeviceSelectionCallback deviceSelectionCallback) {
-        this.callback = callback;
+    public ChromeCastManager(Context context, String applicationId, Cast.MessageReceivedCallback messageReceiverCallback, DeviceSelectionCallback deviceSelectionCallback) {
+        this.messageReceiverCallback = messageReceiverCallback;
         this.deviceSelectionCallback = deviceSelectionCallback;
         this.context = context;
         this.applicationId = applicationId;
@@ -78,37 +76,56 @@ public class ChromeCastManager {
         mediaRouter.removeCallback(mediaRouterCallback);
     }
 
-    public void launchApplication(final String namespace, final Cast.MessageReceivedCallback callback) {
+    public void launchApplication(final Callback successCallback) {
         try {
             Cast.CastApi.launchApplication(getCastApiClient(), getApplicationId(), false)
-                    .setResultCallback(
-                            new ResultCallback<Cast.ApplicationConnectionResult>() {
-                                @Override
-                                public void onResult(Cast.ApplicationConnectionResult result) {
-                                    Status status = result.getStatus();
-                                    if (status.isSuccess()) {
-                                        applicationMetadata = result.getApplicationMetadata();
-                                        sessionId = result.getSessionId();
-                                        if (applicationMetadata.isNamespaceSupported(namespace)) {
-                                            try {
-                                                Cast.CastApi.setMessageReceivedCallbacks(getCastApiClient(), namespace, callback);
-                                            } catch (IOException e) {
-                                                Log.e(TAG, "Exception while creating channel", e);
-                                            }
-                                        } else {
-                                            Log.w(TAG, "receiver application does not support namespace " + YellChannelCallback.NAMESPACE);
-                                        }
-                                    } else {
-                                        unregisterMessageReceiver(namespace);
-                                        applicationMetadata = null;
-                                        sessionId = null;
-                                    }
-                                }
+                    .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
+                        @Override
+                        public void onResult(Cast.ApplicationConnectionResult result) {
+                            Status status = result.getStatus();
+                            if (status.isSuccess()) {
+                                applicationMetadata = result.getApplicationMetadata();
+                                sessionId = result.getSessionId();
+                                successCallback.call();
+                            } else {
+                                applicationMetadata = null;
+                                sessionId = null;
                             }
-                    );
-
+                        }
+                    });
         } catch (Exception e) {
             Log.e(TAG, "Failed to launch application", e);
+        }
+    }
+    public void shutdownApplication() {
+        if (applicationMetadata != null) {
+            Cast.CastApi.stopApplication(getCastApiClient());
+        } else {
+            Log.i(TAG, "can't shutdown application. Is it launched already?");
+        }
+    }
+
+    public void registerMessageReceiver(String namespace, Cast.MessageReceivedCallback receiver) {
+        if (applicationMetadata == null) {
+            Log.w(TAG, "Can't register message receiver. Cast application not launched yet.");
+        } else if (applicationMetadata.isNamespaceSupported(namespace)) {
+            try {
+                Cast.CastApi.setMessageReceivedCallbacks(getCastApiClient(), namespace, receiver);
+            } catch (IOException e) {
+                Log.e(TAG, "Exception while creating channel", e);
+            }
+        } else {
+            Log.w(TAG, "receiver application does not support namespace " + namespace);
+        }
+    }
+
+    public void unregisterMessageReceiver(String namespace) {
+        if (applicationMetadata != null) {
+            try {
+                Cast.CastApi.removeMessageReceivedCallbacks(getCastApiClient(), namespace);
+            } catch (IOException e) {
+                Log.e(TAG, "error while removing message receiver handler of namespace: " + namespace);
+            }
         }
     }
 
@@ -138,7 +155,7 @@ public class ChromeCastManager {
         Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions
                 .builder(device, new ReceiverApplicationListener());
 
-        CastApplicationLauncherCallback connectionCallback = new CastApplicationLauncherCallback(this, callback);
+        CastApplicationLauncherCallback connectionCallback = new CastApplicationLauncherCallback(this, messageReceiverCallback);
         CastApiErrorCallback connectionFailedCallback = new CastApiErrorCallback();
         castApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Cast.API, apiOptionsBuilder.build())
@@ -160,13 +177,5 @@ public class ChromeCastManager {
         selectedDevice = null;
         applicationMetadata = null;
         sessionId = null;
-    }
-
-    private void unregisterMessageReceiver(String namespace) {
-        try {
-            Cast.CastApi.removeMessageReceivedCallbacks(getCastApiClient(), namespace);
-        } catch (IOException e) {
-            Log.e(TAG, "error while removing message receiver handler of namespace: " + namespace);
-        }
     }
 }

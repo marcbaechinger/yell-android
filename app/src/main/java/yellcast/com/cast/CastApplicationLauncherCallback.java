@@ -7,37 +7,28 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import yellcast.com.yell.YellChannelCallback;
 
-/**
- * Created by marcbaechinger on 21.07.14.
- */
 public class CastApplicationLauncherCallback implements GoogleApiClient.ConnectionCallbacks {
-    private static final String TAG = CastApplicationLauncherCallback.class.getCanonicalName();
-
     private boolean waitingForReconnect = false;
     private ChromeCastManager manager;
-    private Cast.MessageReceivedCallback callback;
+    private Cast.MessageReceivedCallback messageReceivedCallback;
 
-    public CastApplicationLauncherCallback(ChromeCastManager manager, Cast.MessageReceivedCallback callback) {
+    public CastApplicationLauncherCallback(ChromeCastManager manager, Cast.MessageReceivedCallback messageReceivedCallback) {
         this.manager = manager;
-        this.callback = callback;
+        this.messageReceivedCallback = messageReceivedCallback;
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         if (waitingForReconnect) {
             waitingForReconnect = false;
-            reconnectChannels();
         } else {
-            manager.launchApplication(YellChannelCallback.NAMESPACE, callback);
+            manager.launchApplication(new Callback() {
+                @Override
+                public void call() {
+                    manager.registerMessageReceiver(YellChannelCallback.NAMESPACE, messageReceivedCallback);
+                }
+            });
         }
-    }
-
-    private void teardown() {
-
-    }
-
-    private void reconnectChannels() {
-        
     }
 
     @Override
