@@ -21,7 +21,7 @@ import yellcast.com.yell.YellChannelCallback;
 public class ChromeCastManager {
 
     private static final String TAG = ChromeCastManager.class.getCanonicalName();
-    private GoogleApiClient apiClient;
+    private GoogleApiClient castApiClient;
 
     private MediaRouter mediaRouter;
     private MediaRouteSelector mediaRouteSelector;
@@ -33,17 +33,13 @@ public class ChromeCastManager {
     private String applicationId;
     private ApplicationMetadata applicationMetadata;
     private String sessionId;
-    private String namespace;
     private Cast.MessageReceivedCallback callback;
     private DeviceSelectionCallback deviceSelectionCallback;
 
 
-    public ChromeCastManager(Cast.MessageReceivedCallback callback, DeviceSelectionCallback deviceSelectionCallback) {
+    public ChromeCastManager(Context context, String applicationId, Cast.MessageReceivedCallback callback, DeviceSelectionCallback deviceSelectionCallback) {
         this.callback = callback;
         this.deviceSelectionCallback = deviceSelectionCallback;
-    }
-
-    public void init(Context context, String applicationId) {
         this.context = context;
         this.applicationId = applicationId;
 
@@ -54,6 +50,19 @@ public class ChromeCastManager {
         mediaRouteSelector = new MediaRouteSelector.Builder()
                 .addControlCategory(CastMediaControlIntent.categoryForCast(applicationId))
                 .build();
+    }
+
+
+    public GoogleApiClient getCastApiClient() {
+        return castApiClient;
+    }
+
+    private void setSelectedDevice(CastDevice selectedDevice) {
+        this.selectedDevice = selectedDevice;
+    }
+
+    public String getApplicationId() {
+        return applicationId;
     }
 
     public void registerMediaRouteSelector(MediaRouteActionProvider mediaRouteActionProvider) {
@@ -69,25 +78,44 @@ public class ChromeCastManager {
         mediaRouter.removeCallback(mediaRouterCallback);
     }
 
-    public GoogleApiClient getApiClient() {
-        return apiClient;
-    }
-    private void setApiClient(GoogleApiClient apiClient) {
-        this.apiClient = apiClient;
-    }
+    public void launchApplication(final String namespace, final Cast.MessageReceivedCallback callback) {
+        try {
+            Cast.CastApi.launchApplication(getCastApiClient(), getApplicationId(), false)
+                    .setResultCallback(
+                            new ResultCallback<Cast.ApplicationConnectionResult>() {
+                                @Override
+                                public void onResult(Cast.ApplicationConnectionResult result) {
+                                    Status status = result.getStatus();
+                                    if (status.isSuccess()) {
+                                        applicationMetadata = result.getApplicationMetadata();
+                                        sessionId = result.getSessionId();
+                                        if (applicationMetadata.isNamespaceSupported(namespace)) {
+                                            try {
+                                                Cast.CastApi.setMessageReceivedCallbacks(getCastApiClient(), namespace, callback);
+                                            } catch (IOException e) {
+                                                Log.e(TAG, "Exception while creating channel", e);
+                                            }
+                                        } else {
+                                            Log.w(TAG, "receiver application does not support namespace " + YellChannelCallback.NAMESPACE);
+                                        }
+                                    } else {
+                                        unregisterMessageReceiver(namespace);
+                                        applicationMetadata = null;
+                                        sessionId = null;
+                                    }
+                                }
+                            }
+                    );
 
-    private void setSelectedDevice(CastDevice selectedDevice) {
-        this.selectedDevice = selectedDevice;
-    }
-
-    public String getApplicationId() {
-        return applicationId;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch application", e);
+        }
     }
 
     public void sendMessage(final String message, final String namespace) {
-        if (apiClient != null) {
+        if (castApiClient != null) {
             try {
-                Cast.CastApi.sendMessage(apiClient, namespace, message)
+                Cast.CastApi.sendMessage(castApiClient, namespace, message)
                         .setResultCallback(new ResultCallback<Status>() {
                             @Override
                             public void onResult(Status status) {
@@ -98,12 +126,12 @@ public class ChromeCastManager {
                 Log.e(TAG, "Exception while sending message", e);
             }
         } else {
-            Log.i(TAG, "apiClient not active. Are you connected to a cast device?");
+            Log.i(TAG, "castApiClient not active. Are you connected to a cast device?");
         }
     }
 
     public boolean isConnected() {
-        return getApiClient() != null && getApiClient().isConnected();
+        return sessionId != null && getCastApiClient() != null && getCastApiClient().isConnected();
     }
 
     public void onRouteSelected(CastDevice device) {
@@ -112,22 +140,21 @@ public class ChromeCastManager {
 
         CastApplicationLauncherCallback connectionCallback = new CastApplicationLauncherCallback(this, callback);
         CastApiErrorCallback connectionFailedCallback = new CastApiErrorCallback();
-        GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
+        castApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Cast.API, apiOptionsBuilder.build())
                 .addConnectionCallbacks(connectionCallback)
                 .addOnConnectionFailedListener(connectionFailedCallback)
                 .build();
 
-        apiClient.connect();
-        this.setApiClient(apiClient);
+        castApiClient.connect();
         this.setSelectedDevice(device);
         deviceSelectionCallback.onSelectDevice(device);
     }
 
     public void onRouteUnselected() {
-        if (apiClient != null) {
-            apiClient.disconnect();
-            apiClient = null;
+        if (castApiClient != null) {
+            castApiClient.disconnect();
+            castApiClient = null;
         }
         deviceSelectionCallback.onDeselectDevice(selectedDevice);
         selectedDevice = null;
@@ -135,45 +162,9 @@ public class ChromeCastManager {
         sessionId = null;
     }
 
-    public void launchApplication(final String namespace, final Cast.MessageReceivedCallback callback) {
+    private void unregisterMessageReceiver(String namespace) {
         try {
-            Cast.CastApi.launchApplication(getApiClient(), getApplicationId(), false)
-                .setResultCallback(
-                        new ResultCallback<Cast.ApplicationConnectionResult>() {
-                            @Override
-                            public void onResult(Cast.ApplicationConnectionResult result) {
-                                Status status = result.getStatus();
-                                if (status.isSuccess()) {
-                                    applicationMetadata = result.getApplicationMetadata();
-                                    sessionId = result.getSessionId();
-                                    if (applicationMetadata.isNamespaceSupported(namespace)) {
-                                        try {
-                                            Cast.CastApi.setMessageReceivedCallbacks(getApiClient(), namespace, callback);
-                                            ChromeCastManager.this.namespace = namespace;
-                                        } catch (IOException e) {
-                                            Log.e(TAG, "Exception while creating channel", e);
-                                            ChromeCastManager.this.namespace = null;
-                                        }
-                                    } else {
-                                        Log.w(TAG, "receiver application does not support namespace " + YellChannelCallback.NAMESPACE);
-                                    }
-                                } else {
-                                    unlistenMessages(namespace);
-                                    applicationMetadata = null;
-                                    sessionId = null;
-                                }
-                            }
-                        }
-                );
-
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to launch application", e);
-        }
-    }
-
-    private void unlistenMessages(String namespace) {
-        try {
-            Cast.CastApi.removeMessageReceivedCallbacks(getApiClient(), namespace);
+            Cast.CastApi.removeMessageReceivedCallbacks(getCastApiClient(), namespace);
         } catch (IOException e) {
             Log.e(TAG, "error while removing message receiver handler of namespace: " + namespace);
         }

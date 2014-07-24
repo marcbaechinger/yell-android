@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import java.util.List;
@@ -21,29 +20,15 @@ import yellcast.com.yell.model.YellModelListener;
 import yellcast.com.yell.model.YellModelListenerBase;
 import yellcast.com.yell.model.YellNode;
 
-/**
- * A placeholder fragment containing a simple view.
- */
 public class YellNodeListFragment extends Fragment  implements AbsListView.OnItemClickListener {
 
     private YellNodeListAdapter adapter;
-    private ListView listView;
     private YellNodeSelectionListener listener;
     private YellApplication application;
     private YellModelListener modelListener;
 
-    public YellNodeListFragment() {
+    public YellNodeListFragment() {}
 
-    }
-
-
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment PersonFragment.
-     */
     public static YellNodeListFragment newInstance() {
         Bundle args = new Bundle();
         YellNodeListFragment fragment = new YellNodeListFragment();
@@ -68,8 +53,7 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
         });
 
 
-
-        listView = (ListView) rootView.findViewById(R.id.yell_list_view);
+        ListView listView = (ListView) rootView.findViewById(R.id.yell_list_view);
         listView.setOnItemClickListener(this);
         SwipeDismissListViewTouchListener touchListener = new SwipeDismissListViewTouchListener(listView, new SwipeDismissListViewTouchListener.DismissCallbacks() {
             @Override
@@ -90,7 +74,7 @@ public class YellNodeListFragment extends Fragment  implements AbsListView.OnIte
 
         List<YellNode> yells = application.getModel().getNodes();
         adapter = new YellNodeListAdapter(getActivity(), yells);
-        ((AdapterView<ListAdapter>) listView).setAdapter(adapter);
+        listView.setAdapter(adapter);
 
         modelListener = new YellModelListenerBase() {
             @Override

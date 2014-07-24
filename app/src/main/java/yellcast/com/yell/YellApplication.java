@@ -31,15 +31,18 @@ public class YellApplication extends Application implements YellModelListener {
 
     public ChromeCastManager getChromeCastManager() {
         if (chromeCastManager == null) {
-            chromeCastManager = new ChromeCastManager(new YellChannelCallback(this), new DeviceSelectionCallback() {
-                @Override
-                public void onDeselectDevice(CastDevice selectedDevice) {
-                    initModel(new ArrayList<YellNode>());
-                }
-                @Override
-                public void onSelectDevice(CastDevice selectedDevice) {}
-            });
-            chromeCastManager.init(this, APPLICATION_ID);
+            chromeCastManager = new ChromeCastManager(
+                    this, APPLICATION_ID,
+                    new YellChannelCallback(this),
+                    new DeviceSelectionCallback() {
+                        @Override
+                        public void onDeselectDevice(CastDevice selectedDevice) {
+                            initModel(new ArrayList<YellNode>());
+                        }
+                        @Override
+                        public void onSelectDevice(CastDevice selectedDevice) {}
+                    }
+            );
         }
         return chromeCastManager;
     }
