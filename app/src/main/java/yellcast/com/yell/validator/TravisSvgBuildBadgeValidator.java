@@ -8,9 +8,9 @@ import yellcast.com.net.FormatValidator;
 /**
  * Created by marcbaechinger on 22.07.14.
  */
-public class TravisFormatValidator extends FormatValidator {
+public class TravisSvgBuildBadgeValidator extends FormatValidator {
 
-    private static final String TAG = TravisFormatValidator.class.getCanonicalName();
+    private static final String TAG = TravisSvgBuildBadgeValidator.class.getCanonicalName();
 
     private String rootElement;
     private int textElementCount = 0;

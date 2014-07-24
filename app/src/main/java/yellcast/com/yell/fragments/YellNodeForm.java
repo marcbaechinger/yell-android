@@ -22,7 +22,7 @@ import yellcast.com.yell.model.YellNode;
 import yellcast.com.yell.model.YellNodeType;
 import yellcast.com.net.AsyncXmlParseTask;
 import yellcast.com.net.FormatValidator;
-import yellcast.com.yell.validator.TravisFormatValidator;
+import yellcast.com.yell.validator.TravisSvgBuildBadgeValidator;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -93,7 +93,7 @@ public class YellNodeForm extends Fragment {
             case R.id.typeRadioJenkins:
             case R.id.typeRadioUp4sure:
             case R.id.typeRadioTravis:
-                return new TravisFormatValidator();
+                return new TravisSvgBuildBadgeValidator();
             default:
                 return createRejectingFormValidator();
         }
