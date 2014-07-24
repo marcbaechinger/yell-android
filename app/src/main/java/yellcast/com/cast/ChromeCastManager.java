@@ -31,12 +31,15 @@ public class ChromeCastManager {
     private String applicationId;
     private ApplicationMetadata applicationMetadata;
     private String sessionId;
-    private Cast.MessageReceivedCallback messageReceiverCallback;
     private DeviceSelectionCallback deviceSelectionCallback;
+    private Callback apiConnectionCallbackDelegate;
 
 
-    public ChromeCastManager(Context context, String applicationId, Cast.MessageReceivedCallback messageReceiverCallback, DeviceSelectionCallback deviceSelectionCallback) {
-        this.messageReceiverCallback = messageReceiverCallback;
+    public ChromeCastManager(Context context, String applicationId,
+                             Callback apiConnectionCallbackDelegate,
+                             DeviceSelectionCallback deviceSelectionCallback) {
+
+        this.apiConnectionCallbackDelegate = apiConnectionCallbackDelegate;
         this.deviceSelectionCallback = deviceSelectionCallback;
         this.context = context;
         this.applicationId = applicationId;
@@ -155,11 +158,10 @@ public class ChromeCastManager {
         Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions
                 .builder(device, new ReceiverApplicationListener());
 
-        CastApplicationLauncherCallback connectionCallback = new CastApplicationLauncherCallback(this, messageReceiverCallback);
         CastApiErrorCallback connectionFailedCallback = new CastApiErrorCallback();
         castApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Cast.API, apiOptionsBuilder.build())
-                .addConnectionCallbacks(connectionCallback)
+                .addConnectionCallbacks(new ApiConnectionCallback(apiConnectionCallbackDelegate))
                 .addOnConnectionFailedListener(connectionFailedCallback)
                 .build();
 
